@@ -1,10 +1,11 @@
 #include <Servo.h>
 
-#define Port Serial
-//#define Port Serial1
-bool debug = false;          // 0 means dont run robust.  1 means report all actions to Serial port
+//#define Port Serial
+#define Port Serial1
+bool debug = true;          // 0 means dont run robust.  1 means report all actions to Serial port
 
 #define ledpin 13
+#define BT_POWER 12
 
 const int maxVal = 1024; // Open stop point
 const int minVal = 0;    // CLosed stop point
@@ -43,8 +44,8 @@ int minimum = 700;   // tune this to the ESC
 // Once dead we stay dead and reset LastTime.
 // While live we expect that to be...  eh...  less than a minute
 long LastTime = 0;           // YOU MUST WATCH OUT FOR OVERFLOW ON THIS...  IT WILL KILL YOU...  
-bool Estop = true;            // Should we kill?  (Anyone can set this true including a timeout or any function.  Only timer can clear it.
-const int DeadMan = 50;      // mSeconds
+bool Estop = false;            // Should we kill?  (Anyone can set this true including a timeout or any function.  Only timer can clear it.
+const int DeadMan = 1000;    //50;      // mSeconds
 long MaxTime = 1000;         // Neck this down perhaps...  we will see.  Stops overflow issues...  stops battery destruction.
 
 
@@ -53,7 +54,7 @@ long MaxTime = 1000;         // Neck this down perhaps...  we will see.  Stops o
 // Declarations
 byte cmd;  // Stores the next byte of incoming data, which is a "command" to do something 
 byte param; // Stores the 2nd byte, which is the command parameter
-
+bool report = false;
 // Command list which, what, who
 /*
  * Example:

@@ -24,17 +24,20 @@
 #include "Cubert_Firmware.h"
  
 // Create doors...  AO pin, AI pin, Max Cal, Min Cal, Last Position, last time, running?
-Door bow =   {10, A0, 0, 0, 0, 0, false};
-Door stern = {11, A1, 0, 0, 0, 0, false};
-Door port =  {12, A2, 0, 0, 0, 0, false};
-Door star =  {13, A3, 0, 0, 0, 0, false};
+Door bow =   {2, A0, 0, 0, 0, 0, false};
+Door stern = {3, A1, 0, 0, 0, 0, false};
+Door port =  {4, A2, 0, 0, 0, 0, false};
+Door star =  {5, A3, 0, 0, 0, 0, false};
 
 
 void setup() 
 {
   // We init both the Computer COM and the Bluetooth ports...  we dont use #define Port in thise case
   Serial.begin(9600);       // computer
-  Serial1.begin(9600);      // Bluetooth
+  Serial1.begin(9600,SERIAL_8N1);      // Bluetooth  Cubert001 is the name, 0001 is the passcode - changed per AT commands listed at bottom
+  // Note:  Do not exceed 9,600 unless required.  20K pullup enabled... slew will kill comms unless done better.
+
+  pinMode(19,INPUT_PULLUP);
  
   // Assign pin numbers to the PWM output Servos
   bow.side.attach(bow.pwmPin);  
@@ -43,10 +46,13 @@ void setup()
   star.side.attach(star.pwmPin);
   
   // Set all channels to BRAKE - which is the middle of the PWM sweep
-  kill();
+  kill(true);
 
   pinMode(ledpin, OUTPUT);  // pin 48 onboard LED
   digitalWrite(ledpin, LOW);
+
+  pinMode(BT_POWER, OUTPUT);  // pin 48 onboard LED
+  digitalWrite(BT_POWER, HIGH);
 
   LastTime = millis();
 
@@ -63,16 +69,27 @@ void loop() {
   // First we address Estop and the dead man timer.
   if(Estop == true || (millis() - LastTime) > DeadMan)
   {
-    kill();
+    kill(false);
+    if(debug) Serial.println("Deadman Tripped...");
+    LastTime = millis();
+    // hmmm...  everytime we hit the brakes (on every loop...) it resets.
+    // debug only
+    digitalWrite(ledpin, LOW);
   }
 
   // Always clear out actionable variables....
   cmd = 0;
   param = 0;
 
-  if ( Port.available() )       // Note that this can be the COM port or the Bluetooth port - change the #define to select which one.  Remember debug mode!!
+  if ( Port.available() > 1)       // Note that this can be the COM port or the Bluetooth port - change the #define to select which one.  Remember debug mode!!
   {
-    cmd = Port.read();
+    while(Port.available())
+    {
+       cmd = Port.read();
+      if(debug) Serial.print("cmd == (");
+      if(debug) Serial.print(cmd);
+      if(debug) Serial.println(")");
+    }
   }
   
 
@@ -84,30 +101,36 @@ void loop() {
       case all:
         {
            param = Port.read();
+           if(debug) Serial.print("param == (");
+           if(debug) Serial.print(param);
+           if(debug) Serial.println(")");
            switch (param)
            {
              case up:
              case down:
              {
                  // Echo back the command and param if in debug mode
-                 if(debug) Port.write(cmd);
-                 if(debug) Port.write(param);  // CRLF???  May be messy...
+                 if(debug) Serial.print("Successful Parse - ");
+                 //if(debug) Port.write(cmd);
+                 //if(debug) Port.write(param);  // CRLF???  May be messy...
+                 if(debug) Serial.println("");
+                 //digitalWrite(ledpin, HIGH);
                  drive(cmd,param);
                break;
              }  
              default: 
              {
-              kill();
+              //kill(true);
               if(debug) Serial.println("param failed parse");
-              break;
              }
            } 
+           break;
         } 
         default: 
         {
           // Kill in any event that does not match.
-          kill();
-          if(debug) Serial.println("cmd failed parse");
+          //kill(false);
+          if(debug && (cmd != 0 || param != 0)) Serial.println("cmd failed parse");
           // normally I would flush the buffer here... but instead we will just kill everything and keep looking.
           break;
         }
@@ -116,7 +139,7 @@ void loop() {
     
 
   // 50 day rollover protection - only needed very rarely...  dont execute every loop.
-  if(LastTime > millis()) LastTime = millis();
+  //if(LastTime > millis()) LastTime = millis();
 }// end loop
 
 
@@ -124,10 +147,10 @@ void loop() {
  * Stop all motors
  * Set state to not running
  */
-void kill()
+void kill(bool report)
 {
   driveAllPWM(brake);
-  if(debug) Serial.println("All Actuators Stopped");
+  if(debug && report) Serial.println("All Actuators Stopped");
 }
 
 void drive(byte cmd, byte param)
@@ -164,7 +187,12 @@ void drive(byte cmd, byte param)
 //  Masks the non-portable writeMicroseconds with a function that takes a Servo and a vector
 void drivePWM(Door door, int vector)
 {
-  LastTime = millis();  // reset the dead man timer     // Reset time when and only when we write hardware.
+  if(vector != brake) 
+  {
+    LastTime = millis();  // reset the dead man timer     // Reset time when and only when we write hardware.
+    digitalWrite(ledpin, HIGH);
+  }
+  else digitalWrite(ledpin, false);
   
   //     not a brake?      Is it at the MAX w request to go further?          or the MIN with request to contract?      or has 200ms gone by without movement?
   if( vector != brake && (door.fbPin >= (maxVal + door.maxCal) && vector > brake ) || (door.fbPin <= (minVal + door.minCal) && vector < brake) || ( (door.lastTime + valInterval > millis()) && (door.fbPin < (door.lastVal + hystVal)) && (door.fbPin > (door.lastVal - hystVal)) ) )
@@ -202,3 +230,28 @@ void driveAllPWM(int vector)
 //  0 one direction max
 //  180 opposite direction max
 //  90 Cenered
+
+
+/*
+ *   Cubert001, 0001 is password - password follows cubert, name revs
+Command Response  Comment
+AT  OK  Does nothing!
+AT+VERSION  OKlinvorV1.5  The firmware version
+AT+NAMExyz  OKsetname Sets the module name to "xyz"
+AT+PIN1234  OKsetPIN  Sets the module PIN to 1234
+AT+BAUD1  OK1200  Sets the baud rate to 1200
+AT+BAUD2  OK2400  Sets the baud rate to 2400
+AT+BAUD3  OK4800  Sets the baud rate to 4800
+AT+BAUD4  OK9600  Sets the baud rate to 9600
+AT+BAUD5  OK19200 Sets the baud rate to 19200
+AT+BAUD6  OK38400 Sets the baud rate to 38400
+AT+BAUD7  OK57600 Sets the baud rate to 57600
+AT+BAUD8  OK115200  Sets the baud rate to 115200
+AT+BAUD9  OK230400  Sets the baud rate to 230400
+AT+BAUDA  OK460800  Sets the baud rate to 460800
+AT+BAUDB  OK921600  Sets the baud rate to 921600
+AT+BAUDC  OK1382400 Sets the baud rate to 138240
+
+
+
+ */
