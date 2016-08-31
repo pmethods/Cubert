@@ -1,6 +1,15 @@
 # Cubert
 Cubert Firmware
 
+UPDATE:  
+
+V2 Arduino firmware sends feedback to the ANDROID, has field timing (50mS dead man), has the LED indicating when PWM is active, has minor changes and updates
+
+V4 ANDROID software fires button commands on 20mS event, writes the text field with feedback @ 100ms, and throws an irritating error because I am testing BT before it is paired.
+
+
+
+
 The APK file can be installed on any Android phone by downloading it then emailing it to yourself.  Of course...  you must enable that ability on your phone...
 
 The Arduino files can be run on any Mega.  I am using an HC-06.  Power pin is (currently) driven directly off a DIO - chip isnt hot so not a problem (later we will use a mosfet).
