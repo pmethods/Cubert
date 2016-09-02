@@ -1,7 +1,17 @@
 # Cubert
 Cubert Firmware
 
-UPDATE:
+UPDATE: V4 Firmware
+
+10K pot feedback now active and working.
+Detects an actuator stall and latches to brake (currently set to 1 second....  200ms probably better)
+Note:  The default hist value works but is close - will probably want to open it up depending on rate of change in field
+Detects an actuator trying to drive past the top or bottom positions (1V to 4V)
+Detects an open or short by runout of the timer...  but aught to do a direct test for under/over!!
+
+Bugs Corrected:  Passing struc by address, analog read on the Ains, logic on the actuator error detection
+
+UPDATE: V3 Firmware
 
 V3 Arduino has had the PWM bugs worked out to the load.  Switch statement corrected.  PWM tuned to specific ESC brand.  Resolution tested.  It was determined that using the brake function resulted in REVERSE running at less than full speed so now running only in F/R mode.  We will see how this turns out.  There is an irritating "feature" to the ESC in that it blipps the output pretty hard at startup...  may be a show-stopper for this low-cost unit.  Been testing with an automotive lightbulb tho - so will have to see.
 
@@ -11,7 +21,7 @@ Anyhow - V3 as it stands works (open loop) up to the point of the 10K feedback. 
 Still need to address Android error on BT popup.
 
 
-UPDATE:  
+UPDATE:  V2 firmware
 
 V2 Arduino firmware sends feedback to the ANDROID, has field timing (50mS dead man), has the LED indicating when PWM is active, has minor changes and updates
 
