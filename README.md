@@ -1,6 +1,16 @@
 # Cubert
 Cubert Firmware
 
+UPDATE:
+
+V3 Arduino has had the PWM bugs worked out to the load.  Switch statement corrected.  PWM tuned to specific ESC brand.  Resolution tested.  It was determined that using the brake function resulted in REVERSE running at less than full speed so now running only in F/R mode.  We will see how this turns out.  There is an irritating "feature" to the ESC in that it blipps the output pretty hard at startup...  may be a show-stopper for this low-cost unit.  Been testing with an automotive lightbulb tho - so will have to see.
+
+No 10K pot hooked up so that bit of software obviously isnt working (rolls...  needs to detect open circuit...  and the rate of change should have covered that but isnt...  probably needs more ()()().  Found a possible bug in the compiler around conditionals int X = Y + ? T:F....  required extra ()() to work.
+
+Anyhow - V3 as it stands works (open loop) up to the point of the 10K feedback.  Need to tune that now with external spoof. 
+Still need to address Android error on BT popup.
+
+
 UPDATE:  
 
 V2 Arduino firmware sends feedback to the ANDROID, has field timing (50mS dead man), has the LED indicating when PWM is active, has minor changes and updates
