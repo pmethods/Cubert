@@ -1,6 +1,20 @@
 # Cubert
 Cubert Firmware
 
+UPDATE:  V5 Firmware
+
+ANDROID:  Dropped the bluetooth connect button and implemented auto-connect as well as auto-reconnect.  Constant heartbeat now sent to Arduino to allow Arduino to drop bad Servers.  (Case where a clown connects to our cubert thereby blocking us).  Added specific serial number connection for safety on the first unit...  ONLY works with this specific HC-06 named XYZ.
+
+ARDUINO:  Heartbeat in both directions for auto drop and reset.  No connection issues at all.  
+
+TO DO:  Add service that monitors feedback from actuators to kill power in the event that they are moving while they are not supposed to.  A pair of high reliability 40A relays are inline with servo power and controlled via Arduino to a Mosfet board.  Consider this the primary LVC control as Solar will cover trickle.
+
+TO DO:  Add basic voltage divider to detect LVC @ 10V and cut Servo power.
+
+TO DO LONG TERM:  Add shunt to detect over-current (binding) and run-away situations.  Its better to monitor current than feedback pots as its a direct measure of work being done (I.E. dont care what pots say...  I*V=P
+
+
+
 UPDATE: V4 Firmware
 
 10K pot feedback now active and working.
