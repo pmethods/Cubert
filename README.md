@@ -1,6 +1,15 @@
 # Cubert
 Cubert Firmware
 
+UPDATE:  Word to the wise....  1/12/19
+
+  Obviously we quit posting updates once we got close to target.  There are bugs etc in the development boilerplate linked here.  I don't recall how far the code moved after the last post...  but I remember V6.X.  I don't recall where V5 left off but we sorted the heartbeat and connection reliability.    I am now going to go back and check to see if MIT added in the button functoinality that I implemented here.
+  
+  -methods
+  
+  
+  
+
 UPDATE:  V5 Firmware
 
 ANDROID:  Dropped the bluetooth connect button and implemented auto-connect as well as auto-reconnect.  Constant heartbeat now sent to Arduino to allow Arduino to drop bad Servers.  (Case where a clown connects to our cubert thereby blocking us).  Added specific serial number connection for safety on the first unit...  ONLY works with this specific HC-06 named XYZ.
